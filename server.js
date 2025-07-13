@@ -1,3 +1,5 @@
+const cors = require('cors');
+app.use(cors());
 const express = require('express');
 const ytdl = require('@distube/ytdl-core');
 const ytsr = require('ytsr');
@@ -6,7 +8,7 @@ const fs = require('fs');
 const NodeCache = require('node-cache');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // Cache para resultados (1 hora de duración)
 const cache = new NodeCache({ stdTTL: 3600 });
@@ -168,13 +170,14 @@ app.get('/stream/:id', async (req, res) => {
     res.setHeader('Content-Disposition', `inline; filename="${info.videoDetails.title}.mp3"`);
     res.setHeader('Cache-Control', 'no-cache');
     
-    const audioStream = ytdl(url, { 
+    const audioStream = ytdl(url, {
       quality: quality,
       filter: 'audioonly',
-      highWaterMark: 1 << 25, // 32MB buffer para streaming suave
+      highWaterMark: 1 << 25,
       requestOptions: {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          // Usar User-Agent móvil para evitar restricciones
+          'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-A205U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36'
         }
       }
     });
@@ -192,6 +195,10 @@ app.get('/stream/:id', async (req, res) => {
     console.error('Error streaming:', error.message);
     res.status(500).json({ error: 'Error en streaming' });
   }
+});
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Descarga directa (optimizada) - CORREGIDO

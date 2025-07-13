@@ -93,8 +93,8 @@
             <audio class="hidden" preload="none"></audio>
 
             <div class="flex space-x-2">
-              <a href="/download/${e.id}?format=flac" class="flex-1 text-center py-2 rounded-full bg-green-600 hover:bg-green-500 font-bold text-sm transition">FLAC</a>
-              <a href="/download/${e.id}?format=mp3" class="flex-1 text-center py-2 rounded-full bg-blue-600 hover:bg-blue-500 font-bold text-sm transition">MP3</a>
+              <a href="${window.location.origin}/download/${e.id}?format=flac" class="flex-1 text-center py-2 rounded-full bg-green-600 hover:bg-green-500 font-bold text-sm transition">FLAC</a>
+              <a href="${window.location.origin}/download/${e.id}?format=mp3" class="flex-1 text-center py-2 rounded-full bg-blue-600 hover:bg-blue-500 font-bold text-sm transition">MP3</a>
             </div>
           </div>
         `).join('');
@@ -121,19 +121,16 @@
 
         playBtn.addEventListener('click', async () => {
           if (audio.paused) {
-            // First time playing - need to load audio URL
             if (!audio.src) {
               try {
                 container.classList.add('loading');
                 
-                // Check cache first
+                // Usar nuestra ruta de streaming en lugar de la URL directa
                 let audioUrl = audioCache.get(videoId);
                 
                 if (!audioUrl) {
-                  // Fetch audio URL from API
-                  const response = await fetch(`/api/video/${videoId}`);
-                  const videoData = await response.json();
-                  audioUrl = videoData.audioUrl;
+                  // Usar endpoint /stream en lugar de /api/video
+                  audioUrl = `/stream/${videoId}`;
                   audioCache.set(videoId, audioUrl);
                 }
                 
